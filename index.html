@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Fork & Forchetta</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <!-- Bootswatch United (Bootstrap 5.3) -->
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/united/bootstrap.min.css"
+    />
+    <link rel="icon" href="data:," />
+  </head>
+  <body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary border-bottom">
+      <div class="container">
+        <a class="navbar-brand fw-semibold" href="#">🍲 Fork & Forchetta</a>
+
+        <div class="d-flex ms-auto align-items-center">
+          <!-- LANG -->
+          <div class="btn-group me-2">
+            <button class="btn btn-outline-light btn-sm" id="lang-en">
+              EN
+            </button>
+            <button class="btn btn-outline-light btn-sm" id="lang-it">
+              IT
+            </button>
+          </div>
+
+          <!-- SEARCH -->
+          <form class="d-flex" role="search" id="searchForm">
+            <input
+              class="form-control form-control-sm me-2"
+              type="search"
+              placeholder="Search..."
+              aria-label="Search"
+              id="searchInput"
+            />
+            <button class="btn btn-outline-light btn-sm" type="submit">
+              Go
+            </button>
+          </form>
+        </div>
+      </div>
+    </nav>
+
+    <main class="container py-4">
+      <!-- Alerts -->
+      <div id="alertBox" class="alert d-none" role="alert"></div>
+
+      <div class="row g-4">
+        <!-- FORM -->
+        <div class="col-lg-4">
+          <div class="card shadow-sm">
+            <div class="card-body">
+              <h5 class="card-title mb-3" id="t_addTitle">Add New Recipe</h5>
+              <form id="recipeForm" enctype="multipart/form-data" novalidate>
+                <div class="mb-3">
+                  <label for="title" class="form-label" id="t_recipeName"
+                    >Recipe Name</label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="title"
+                    placeholder="Type a recipe name"
+                    required
+                  />
+                </div>
+                <div class="mb-3">
+                  <label for="ingredients" class="form-label" id="t_ingredients"
+                    >Ingredients (comma-separated)</label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="ingredients"
+                    placeholder="e.g. flour, sugar, egg"
+                    required
+                  />
+                </div>
+                <div class="mb-3">
+                  <label for="image" class="form-label" id="t_imageLabel"
+                    >Image (optional)</label
+                  >
+                  <input
+                    type="file"
+                    class="form-control"
+                    id="image"
+                    accept="image/*"
+                  />
+                </div>
+                <div class="d-flex gap-2">
+                  <button type="submit" class="btn btn-primary" id="submitBtn">
+                    Add
+                  </button>
+                  <button
+                    type="button"
+                    id="cancelEditBtn"
+                    class="btn btn-secondary d-none"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- LIST -->
+        <div class="col-lg-8">
+          <div class="card shadow-sm">
+            <div class="card-body">
+              <div class="d-flex align-items-center justify-content-between">
+                <h5 class="card-title m-0" id="t_listTitle">Recipe List</h5>
+              </div>
+
+              <div id="recipeGrid" class="row g-3 mt-2"></div>
+
+              <hr class="mt-3" />
+              <!-- PAGER -->
+              <div
+                id="pager"
+                class="d-flex align-items-center justify-content-between"
+              >
+                <div class="text-muted small" id="pagerInfo"></div>
+                <div class="btn-group">
+                  <button class="btn btn-outline-secondary btn-sm" id="prevBtn">
+                    Prev
+                  </button>
+                  <button class="btn btn-outline-secondary btn-sm" id="nextBtn">
+                    Next
+                  </button>
+                </div>
+              </div>
+              <!-- /PAGER -->
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Bootstrap JS (opsiyonel: modal/toast kullanırsan işe yarar) -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+      // ====== CONFIG ======
+      const API_URL = window.location.hostname.includes("localhost")
+        ? "http://localhost:5000"
+        : "https://fork-forchetta-api.onrender.com>"; // deploydan sonra güncelle
+      const getId = (r) => r && (r._id || r.id);
+      const imgSrc = (u) => (u?.startsWith("http") ? u : API_URL + u);
+
+      // i18n
+      let lang = "en";
+      let editId = null;
+      let currentData = [];
+
+      // search + pagination state
+      let query = "";
+      let page = 1;
+      const LIMIT = 4; // sabit limit
+
+      const t = {
+        en: {
+          addTitle: "Add New Recipe",
+          recipeName: "Recipe Name",
+          ingredients: "Ingredients (comma-separated)",
+          imageLabel: "Image (optional)",
+          add: "Add",
+          update: "Update",
+          cancel: "Cancel",
+          listTitle: "Recipe List",
+          edit: "Edit",
+          del: "Delete",
+          confirmDelete: "Are you sure you want to delete this recipe?",
+          failedLoad: "Failed to load recipe",
+          failedOp: "Operation failed.",
+          validate: "Please provide a title and at least one ingredient.",
+          created: "Recipe added.",
+          updated: "Recipe updated.",
+          deleted: "Recipe deleted.",
+        },
+        it: {
+          addTitle: "Aggiungi Nuova Ricetta",
+          recipeName: "Nome della Ricetta",
+          ingredients: "Ingredienti (separati da virgola)",
+          imageLabel: "Immagine (facoltativa)",
+          add: "Aggiungi",
+          update: "Aggiorna",
+          cancel: "Annulla",
+          listTitle: "Elenco Ricette",
+          edit: "Modifica",
+          del: "Elimina",
+          confirmDelete: "Sei sicuro di voler eliminare questa ricetta?",
+          failedLoad: "Impossibile caricare la ricetta",
+          failedOp: "Operazione non riuscita.",
+          validate: "Inserisci un titolo e almeno un ingrediente.",
+          created: "Ricetta aggiunta.",
+          updated: "Ricetta aggiornata.",
+          deleted: "Ricetta eliminata.",
+        },
+      };
+
+      function applyTexts() {
+        document.querySelector(".navbar-brand").textContent =
+          "🍲 Fork & Forchetta";
+        document.getElementById("t_addTitle").textContent = t[lang].addTitle;
+        document.getElementById("t_recipeName").textContent =
+          t[lang].recipeName;
+        document.getElementById("t_ingredients").textContent =
+          t[lang].ingredients;
+        document.getElementById("t_imageLabel").textContent =
+          t[lang].imageLabel;
+        document.getElementById("submitBtn").textContent = editId
+          ? t[lang].update
+          : t[lang].add;
+        document.getElementById("cancelEditBtn").textContent = t[lang].cancel;
+        document.getElementById("t_listTitle").textContent = t[lang].listTitle;
+        renderList(currentData);
+      }
+
+      document.getElementById("lang-en").onclick = () => {
+        lang = "en";
+        applyTexts();
+      };
+      document.getElementById("lang-it").onclick = () => {
+        lang = "it";
+        applyTexts();
+      };
+
+      // UI helpers
+      function showAlert(msg, type = "success") {
+        const box = document.getElementById("alertBox");
+        box.className = `alert alert-${type}`;
+        box.textContent = msg;
+        box.classList.remove("d-none");
+        setTimeout(() => box.classList.add("d-none"), 1800);
+      }
+      function setBusy(on) {
+        const btn = document.getElementById("submitBtn");
+        btn.disabled = on;
+        btn.textContent = on ? "..." : editId ? t[lang].update : t[lang].add;
+      }
+
+      // Render list
+      function renderList(data) {
+        currentData = data;
+        const grid = document.getElementById("recipeGrid");
+        grid.innerHTML = "";
+
+        if (!data.length) {
+          grid.innerHTML = `<div class="col-12"><div class="text-muted small">No recipes yet.</div></div>`;
+          renderPager({ total: 0, pages: 1 });
+          return;
+        }
+
+        data.forEach((r) => {
+          const col = document.createElement("div");
+          col.className = "col-md-6";
+          col.innerHTML = `
+        <div class="card h-100">
+          ${
+            r.imageUrl
+              ? `<img src="${imgSrc(
+                  r.imageUrl
+                )}" class="card-img-top" style="height:200px;object-fit:cover;">`
+              : ""
+          }
+          <div class="card-body d-flex flex-column">
+            <h5 class="card-title mb-2">${r.title}</h5>
+            <p class="card-text text-muted small mb-3">${(
+              r.ingredients || []
+            ).join(", ")}</p>
+            <div class="mt-auto d-flex gap-2">
+              <button class="btn btn-outline-secondary btn-sm edit-btn" data-id="${getId(
+                r
+              )}">${t[lang].edit}</button>
+              <button class="btn btn-outline-danger btn-sm del-btn" data-id="${getId(
+                r
+              )}">${t[lang].del}</button>
+            </div>
+          </div>
+        </div>
+      `;
+          grid.appendChild(col);
+        });
+
+        document
+          .querySelectorAll(".edit-btn")
+          .forEach((btn) => (btn.onclick = () => startEdit(btn.dataset.id)));
+        document
+          .querySelectorAll(".del-btn")
+          .forEach((btn) => (btn.onclick = () => deleteRecipe(btn.dataset.id)));
+      }
+
+      function renderPager({ total, pages }) {
+        const info = document.getElementById("pagerInfo");
+        const prev = document.getElementById("prevBtn");
+        const next = document.getElementById("nextBtn");
+
+        info.textContent = `Page ${page}/${pages || 1} • ${total} item(s)`;
+        prev.disabled = page <= 1;
+        next.disabled = !pages || page >= pages;
+
+        prev.onclick = () => {
+          if (page > 1) {
+            page--;
+            fetchRecipes();
+          }
+        };
+        next.onclick = () => {
+          if (!pages || page >= pages) return;
+          page++;
+          fetchRecipes();
+        };
+      }
+
+      // ====== API ======
+      async function fetchRecipes() {
+        const url = new URL(`${API_URL}/recipes`);
+        if (query) url.searchParams.set("search", query);
+        url.searchParams.set("page", String(page));
+        url.searchParams.set("limit", String(LIMIT));
+
+        // Tanı için:
+        // console.log("GET", url.toString());
+
+        const res = await fetch(url, {
+          headers: { Accept: "application/json" },
+        });
+        if (!res.ok) {
+          showAlert(t[lang].failedOp, "danger");
+          return;
+        }
+
+        const data = await res.json();
+        const items = data.items || [];
+        const total = data.total ?? 0;
+        const pages = data.pages ?? data.totalPages ?? 1;
+
+        renderList(items);
+        renderPager({ total, pages });
+      }
+
+      async function createRecipeFD({ title, ingredients, imageFile }) {
+        const fd = new FormData();
+        fd.append("title", title);
+        fd.append("ingredients", ingredients.join(","));
+        if (imageFile) fd.append("image", imageFile);
+
+        const res = await fetch(`${API_URL}/recipes`, {
+          method: "POST",
+          body: fd,
+        });
+        if (!res.ok) throw new Error("Create failed");
+        return res.json();
+      }
+
+      async function updateRecipeFD(id, { title, ingredients, imageFile }) {
+        const fd = new FormData();
+        fd.append("title", title);
+        fd.append("ingredients", ingredients.join(","));
+        if (imageFile) fd.append("image", imageFile);
+
+        const res = await fetch(`${API_URL}/recipes/${id}`, {
+          method: "PUT",
+          body: fd,
+        });
+        if (!res.ok) throw new Error("Update failed");
+        return res.json();
+      }
+
+      async function startEdit(id) {
+        const res = await fetch(`${API_URL}/recipes/${id}`, {
+          headers: { Accept: "application/json" },
+        });
+        if (res.status === 404) {
+          showAlert("Recipe not found. Refreshing list.", "warning");
+          fetchRecipes();
+          return;
+        }
+        if (!res.ok) {
+          showAlert(t[lang].failedLoad, "danger");
+          return;
+        }
+        const r = await res.json();
+        document.getElementById("title").value = r.title;
+        document.getElementById("ingredients").value = (
+          r.ingredients || []
+        ).join(", ");
+        document.getElementById("image").value = "";
+        document.getElementById("submitBtn").textContent = t[lang].update;
+        document.getElementById("cancelEditBtn").classList.remove("d-none");
+        editId = getId(r);
+      }
+
+      async function deleteRecipe(id) {
+        if (!confirm(t[lang].confirmDelete)) return;
+        const res = await fetch(`${API_URL}/recipes/${id}`, {
+          method: "DELETE",
+          headers: { Accept: "application/json" },
+        });
+        if (res.status === 404) {
+          showAlert("Recipe not found. Refreshing list.", "warning");
+          fetchRecipes();
+          return;
+        }
+        if (!res.ok) {
+          showAlert(t[lang].failedOp, "danger");
+          return;
+        }
+        showAlert(t[lang].deleted, "success");
+        fetchRecipes();
+      }
+
+      function cancelEdit() {
+        editId = null;
+        document.getElementById("recipeForm").reset();
+        document.getElementById("submitBtn").textContent = t[lang].add;
+        document.getElementById("cancelEditBtn").classList.add("d-none");
+      }
+      document.getElementById("cancelEditBtn").onclick = cancelEdit;
+
+      // Search events
+      document.getElementById("searchForm").addEventListener("submit", (e) => {
+        e.preventDefault();
+        query = document.getElementById("searchInput").value.trim();
+        page = 1;
+        fetchRecipes();
+      });
+      let searchTmr;
+      document.getElementById("searchInput").addEventListener("input", (e) => {
+        clearTimeout(searchTmr);
+        searchTmr = setTimeout(() => {
+          query = e.target.value.trim();
+          page = 1;
+          fetchRecipes();
+        }, 300);
+      });
+
+      // Form submit
+      document
+        .getElementById("recipeForm")
+        .addEventListener("submit", async (e) => {
+          e.preventDefault();
+          const title = document.getElementById("title").value.trim();
+          const ingredients = document
+            .getElementById("ingredients")
+            .value.split(",")
+            .map((i) => i.trim())
+            .filter(Boolean);
+          const imageFile = document.getElementById("image").files[0];
+
+          if (!title || ingredients.length === 0) {
+            showAlert(t[lang].validate, "warning");
+            return;
+          }
+
+          try {
+            setBusy(true);
+            if (editId) {
+              await updateRecipeFD(editId, { title, ingredients, imageFile });
+              showAlert(t[lang].updated, "success");
+              cancelEdit();
+            } else {
+              await createRecipeFD({ title, ingredients, imageFile });
+              showAlert(t[lang].created, "success");
+            }
+            await fetchRecipes(); // aynı sayfa ve arama state’i korunur
+          } catch (err) {
+            console.error(err);
+            showAlert(t[lang].failedOp, "danger");
+          } finally {
+            setBusy(false);
+          }
+        });
+
+      // init
+      fetchRecipes().then(applyTexts);
+    </script>
+  </body>
+</html>

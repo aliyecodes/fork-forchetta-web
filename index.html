@@ -1,0 +1,855 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fork & Forchetta</title>
+    <meta
+      name="description"
+      content="Fork & Forchetta — simple recipe manager (EN/IT)."
+    />
+    <meta property="og:title" content="Fork & Forchetta" />
+    <meta
+      property="og:description"
+      content="Simple recipe manager. Add, edit, search recipes."
+    />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://fork-forchetta-web.vercel.app/" />
+    <meta
+      property="og:image"
+      content="https://res.cloudinary.com/demo/image/upload/w_1200/sample.jpg"
+    />
+    <meta name="twitter:card" content="summary_large_image" />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootswatch@5.3.3/dist/united/bootstrap.min.css"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css"
+    />
+    <link rel="icon" href="data:," />
+    <link rel="preconnect" href="https://res.cloudinary.com" crossorigin />
+    <meta name="theme-color" content="#b52e31" />
+    <style>
+      :root {
+        --img-h: 180px;
+      }
+      .flip-card {
+        perspective: 1200px;
+        cursor: pointer;
+        height: 100%;
+      }
+      .flip-inner {
+        position: relative;
+        width: 100%;
+        min-height: 380px;
+        transition: transform 0.6s;
+        transform-style: preserve-3d;
+        will-change: transform;
+      }
+      .flip-card.flipped .flip-inner {
+        transform: rotateY(180deg);
+      }
+      .flip-front,
+      .flip-back {
+        position: absolute;
+        inset: 0;
+        backface-visibility: hidden;
+        border-radius: 0.375rem;
+        overflow: hidden;
+      }
+      .flip-back {
+        transform: rotateY(180deg);
+      }
+      .flip-front .card-body,
+      .flip-back .card-body {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        min-height: 0;
+      }
+      .card-img-top {
+        height: var(--img-h);
+        object-fit: cover;
+      }
+      .scroll-area,
+      .back-scroll {
+        max-height: none;
+        overflow: visible;
+      }
+      .action-row {
+        margin-top: auto;
+        padding-bottom: 1rem;
+        margin-bottom: 2rem;
+      }
+      .action-buttons {
+        display: flex;
+        gap: 0.5rem;
+        margin-top: 0.75rem;
+      }
+      #btnTop {
+        position: fixed;
+        right: 1rem;
+        bottom: 1rem;
+        z-index: 1030;
+        display: none;
+      }
+      @media (min-width: 992px) {
+        .flip-front .card-body,
+        .flip-back .card-body {
+          padding-bottom: 2rem;
+        }
+        .action-row {
+          margin-bottom: 2rem;
+        }
+      }
+      @media (max-width: 576px) {
+        .clamp-ingredients {
+          max-height: none !important;
+          overflow: visible !important;
+          position: static !important;
+        }
+        .clamp-ingredients::after {
+          display: none !important;
+        }
+        .clamp-ingredients.expanded {
+          max-height: none !important;
+        }
+        .clamp-ingredients.expanded::after {
+          display: none !important;
+        }
+        .more-btn {
+          display: none !important;
+        }
+        .card .btn {
+          margin-bottom: 0.5rem;
+        }
+      }
+      @media (min-width: 577px) and (max-width: 991.98px) {
+        :root {
+          --img-h: 150px;
+        }
+      }
+      @media (min-width: 577px) {
+        .more-btn {
+          display: none !important;
+        }
+      }
+      .flip-hint {
+        white-space: nowrap;
+      }
+    </style>
+  </head>
+  <body class="bg-light">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-primary border-bottom">
+      <div class="container">
+        <a class="navbar-brand fw-semibold" href="#">🍲 Fork & Forchetta</a>
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navMain"
+          aria-controls="navMain"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navMain">
+          <div
+            class="ms-auto d-flex flex-column flex-lg-row align-items-stretch align-items-lg-center gap-2"
+          >
+            <div class="btn-group me-lg-2">
+              <button
+                class="btn btn-outline-light btn-sm me-2"
+                data-bs-toggle="modal"
+                data-bs-target="#aboutModal"
+                id="btnAbout"
+              >
+                About
+              </button>
+              <button
+                class="btn btn-outline-light btn-sm"
+                data-bs-toggle="modal"
+                data-bs-target="#contactModal"
+                id="btnContact"
+              >
+                Contact
+              </button>
+              <a
+                href="https://github.com/aliyecodes/fork-forchetta-web"
+                target="_blank"
+                rel="noopener"
+                class="btn btn-outline-light btn-sm"
+                >GitHub</a
+              >
+              <button class="btn btn-outline-light btn-sm" id="lang-en">
+                EN
+              </button>
+              <button class="btn btn-outline-light btn-sm" id="lang-it">
+                IT
+              </button>
+            </div>
+            <form class="d-flex" role="search" id="searchForm">
+              <input
+                class="form-control form-control-sm me-2"
+                type="search"
+                placeholder="Search..."
+                aria-label="Search"
+                id="searchInput"
+              />
+              <button class="btn btn-outline-light btn-sm" type="submit">
+                Go
+              </button>
+            </form>
+          </div>
+        </div>
+      </div>
+    </nav>
+    <main class="container py-4">
+      <div id="alertBox" class="alert d-none" role="alert"></div>
+      <div class="row g-4">
+        <div class="col-lg-4">
+          <div class="card shadow-sm sticky-top" style="top: 1rem">
+            <div class="card-body">
+              <h5 class="card-title mb-3" id="t_addTitle">Add New Recipe</h5>
+              <form id="recipeForm" enctype="multipart/form-data" novalidate>
+                <div class="mb-3">
+                  <label for="title" class="form-label" id="t_recipeName"
+                    >Recipe Name</label
+                  >
+                  <input
+                    type="text"
+                    class="form-control"
+                    id="title"
+                    placeholder="Type a recipe name"
+                    required
+                  />
+                </div>
+                <div class="mb-3">
+                  <label class="form-label" id="t_ingredients"
+                    >Ingredients</label
+                  >
+                  <div class="input-group">
+                    <input
+                      type="text"
+                      class="form-control"
+                      id="ingredientInput"
+                      placeholder="e.g. flour"
+                    />
+                    <button
+                      type="button"
+                      class="btn btn-outline-secondary"
+                      id="addIngredientBtn"
+                    >
+                      Add
+                    </button>
+                  </div>
+                  <ul class="list-group mt-2" id="ingredientList"></ul>
+                </div>
+                <div class="mb-3">
+                  <label
+                    for="instructions"
+                    class="form-label"
+                    id="t_instructions"
+                    >Instructions</label
+                  >
+                  <textarea
+                    class="form-control"
+                    id="instructions"
+                    rows="4"
+                    placeholder="Step 1..., Step 2..."
+                  ></textarea>
+                </div>
+                <div class="mb-3">
+                  <label class="form-label" id="t_imageLabel"
+                    >Image (optional)</label
+                  >
+                  <div class="d-flex align-items-center gap-2">
+                    <button
+                      type="button"
+                      class="btn btn-outline-secondary btn-sm"
+                      id="chooseFileBtn"
+                    >
+                      Choose file
+                    </button>
+                    <span class="small text-muted" id="fileHint"
+                      >No file chosen</span
+                    >
+                  </div>
+                  <input
+                    type="file"
+                    class="visually-hidden"
+                    id="image"
+                    accept="image/*"
+                  />
+                </div>
+                <div class="d-flex gap-2">
+                  <button type="submit" class="btn btn-primary" id="submitBtn">
+                    Add
+                  </button>
+                  <button
+                    type="button"
+                    id="cancelEditBtn"
+                    class="btn btn-secondary d-none"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-8">
+          <div class="card shadow-sm">
+            <div class="card-body">
+              <div class="d-flex align-items-center justify-content-between">
+                <h5 class="card-title m-0" id="t_listTitle">Recipe List</h5>
+              </div>
+              <div id="recipeGrid" class="row g-3 mt-2"></div>
+              <hr class="mt-3" />
+              <div
+                id="pager"
+                class="d-flex align-items-center justify-content-between"
+              >
+                <div class="text-muted small" id="pagerInfo"></div>
+                <div class="btn-group">
+                  <button class="btn btn-outline-secondary btn-sm" id="prevBtn">
+                    Prev
+                  </button>
+                  <button class="btn btn-outline-secondary btn-sm" id="nextBtn">
+                    Next
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <footer class="border-top py-3 mt-4 text-center text-muted small">
+        <div class="container text-center small">© 2025 Fork & Forchetta</div>
+      </footer>
+      <div class="modal fade" id="aboutModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h5 class="modal-title" id="aboutTitle">About</h5>
+              <button
+                type="button"
+                class="btn-close"
+                data-bs-dismiss="modal"
+                aria-label="Close"
+              ></button>
+            </div>
+            <div class="modal-body" id="aboutBody">...</div>
+          </div>
+        </div>
+      </div>
+      <button
+        id="btnTop"
+        class="btn btn-primary btn-sm rounded-circle d-flex align-items-center justify-content-center"
+        style="width: 44px; height: 44px"
+        aria-label="Back to top"
+      >
+        <i class="bi bi-arrow-up fs-4"></i>
+        <span class="visually-hidden">Top</span>
+      </button>
+    </main>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      const API_URL = window.location.hostname.includes("localhost")
+        ? "http://localhost:5000"
+        : "https://fork-forchetta-api.onrender.com";
+      const getId = (r) => r && (r._id || r.id);
+      function imgSrc(u, w = 800) {
+        if (!u) return "";
+        let src = String(u).replace(
+          "http://fork-forchetta-api.onrender.com",
+          "https://fork-forchetta-api.onrender.com"
+        );
+        if (!/^https?:\/\//i.test(src)) {
+          if (!src.startsWith("/uploads/"))
+            src = "/uploads/" + src.replace(/^\/+/, "");
+          src = API_URL + src;
+        }
+        try {
+          const isCloud =
+            src.includes("res.cloudinary.com") && src.includes("/upload/");
+          if (isCloud) {
+            src = src.replace(
+              "/upload/",
+              `/upload/f_auto,q_auto,c_fill,w_${w}/`
+            );
+          }
+        } catch (e) {}
+        return src;
+      }
+      let lang = "en";
+      let editId = null;
+      let currentData = [];
+      let query = "";
+      let page = 1;
+      const LIMIT = 4;
+      let ingredientsArr = [];
+      function renderIngredients() {
+        const ul = document.getElementById("ingredientList");
+        ul.innerHTML = "";
+        if (!ingredientsArr.length) return;
+        ingredientsArr.forEach((ing, i) => {
+          const li = document.createElement("li");
+          li.className =
+            "list-group-item d-flex justify-content-between align-items-center";
+          li.textContent = ing;
+          const rm = document.createElement("button");
+          rm.className = "btn btn-sm btn-danger";
+          rm.textContent = "×";
+          rm.onclick = () => {
+            ingredientsArr.splice(i, 1);
+            renderIngredients();
+          };
+          li.appendChild(rm);
+          ul.appendChild(li);
+        });
+      }
+      const t = {
+        en: {
+          addTitle: "Add New Recipe",
+          recipeName: "Recipe Name",
+          ingredients: "Ingredients",
+          instructions: "Instructions",
+          instructionsPH: "Step 1..., Step 2...",
+          imageLabel: "Image (optional)",
+          add: "Add Recipe",
+          addIng: "Add Ingredient",
+          ingPlaceholder: "e.g. flour",
+          update: "Update",
+          cancel: "Cancel",
+          listTitle: "Recipe List",
+          edit: "Edit",
+          del: "Delete",
+          confirmDelete: "Are you sure you want to delete this recipe?",
+          failedLoad: "Failed to load recipe",
+          failedOp: "Operation failed.",
+          validate: "Please provide a title and at least one ingredient.",
+          created: "Recipe added.",
+          updated: "Recipe updated.",
+          deleted: "Recipe deleted.",
+          chooseFile: "Choose file",
+          noFile: "No file chosen",
+          about: "About",
+          contact: "Contact",
+          aboutTitle: "About Fork & Forchetta",
+          aboutBody:
+            "Mini recipe manager built with HTML + Bootsrap + JS. API: Node.js + Express + MongoDB + Cloudinary.",
+          contactText: "Email: adrendor@protonmail.com",
+          backHint: "Click to flip",
+          howTo: "How to",
+          showMore: "Show more",
+          showLess: "Show less",
+        },
+        it: {
+          addTitle: "Aggiungi Nuova Ricetta",
+          recipeName: "Nome della Ricetta",
+          ingredients: "Ingredienti",
+          instructions: "Preparazione",
+          instructionsPH: "Passo 1..., Passo 2...",
+          imageLabel: "Immagine (facoltativa)",
+          add: "Aggiungi Ricetta",
+          addIng: "Aggiungi Ingrediente",
+          ingPlaceholder: "es. farina",
+          update: "Aggiorna",
+          cancel: "Annulla",
+          listTitle: "Elenco Ricette",
+          edit: "Modifica",
+          del: "Elimina",
+          confirmDelete: "Sei sicuro di voler eliminare questa ricetta?",
+          failedLoad: "Impossibile caricare la ricetta",
+          failedOp: "Operazione non riuscita.",
+          validate: "Inserisci un titolo e almeno un ingrediente.",
+          created: "Ricetta aggiunta.",
+          updated: "Ricetta aggiornata.",
+          deleted: "Ricetta eliminata.",
+          chooseFile: "Scegli file",
+          noFile: "Nessun file selezionato",
+          about: "Chi siamo",
+          contact: "Contatti",
+          aboutTitle: "Informazioni su Fork & Forchetta",
+          aboutBody:
+            "Mini gestore di ricette con HTML + Bootstrap + JS. API: Node.js + Express + MongoDB + Cloudinary",
+          contactText: "Email: adrendor@protonmail.com",
+          backHint: "Clicca per girare",
+          howTo: "Procedimento",
+          showMore: "Mostra altro",
+          showLess: "Mostra meno",
+        },
+      };
+      const ingInput = document.getElementById("ingredientInput");
+      const addIngBtn = document.getElementById("addIngredientBtn");
+      if (addIngBtn && ingInput) {
+        addIngBtn.onclick = () => {
+          const v = ingInput.value.trim();
+          if (!v) return;
+          ingredientsArr.push(v);
+          ingInput.value = "";
+          renderIngredients();
+        };
+        ingInput.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            addIngBtn.click();
+          }
+        });
+      }
+      function hookFilePicker() {
+        const input = document.getElementById("image");
+        const btn = document.getElementById("chooseFileBtn");
+        const hint = document.getElementById("fileHint");
+        btn.onclick = () => input.click();
+        const updateHint = () => {
+          hint.textContent =
+            input.files && input.files[0]
+              ? input.files[0].name
+              : t[lang].noFile;
+        };
+        input.addEventListener("change", updateHint);
+        updateHint();
+      }
+      function applyTexts() {
+        document.querySelector(".navbar-brand").textContent =
+          "🍲 Fork & Forchetta";
+        document.getElementById("t_addTitle").textContent = t[lang].addTitle;
+        document.getElementById("t_recipeName").textContent =
+          t[lang].recipeName;
+        document.getElementById("t_ingredients").textContent =
+          t[lang].ingredients;
+        document.getElementById("t_instructions").textContent =
+          t[lang].instructions;
+        document.getElementById("instructions").placeholder =
+          t[lang].instructionsPH;
+        document.getElementById("t_imageLabel").textContent =
+          t[lang].imageLabel;
+        document.getElementById("submitBtn").textContent = editId
+          ? t[lang].update
+          : t[lang].add;
+        document.getElementById("cancelEditBtn").textContent = t[lang].cancel;
+        document.getElementById("t_listTitle").textContent = t[lang].listTitle;
+        document.getElementById("chooseFileBtn").textContent =
+          t[lang].chooseFile;
+        const addBtn = document.getElementById("addIngredientBtn");
+        if (addBtn) addBtn.textContent = t[lang].addIng;
+        const ingInputEl = document.getElementById("ingredientInput");
+        if (ingInputEl) ingInputEl.placeholder = t[lang].ingPlaceholder;
+        const imgInput = document.getElementById("image");
+        document.getElementById("fileHint").textContent =
+          imgInput.files && imgInput.files[0]
+            ? imgInput.files[0].name
+            : t[lang].noFile;
+        document.getElementById("btnAbout").textContent = t[lang].about;
+        document.getElementById("btnContact").textContent = t[lang].contact;
+        document.getElementById("aboutTitle").textContent = t[lang].aboutTitle;
+        document.getElementById("aboutBody").textContent = t[lang].aboutBody;
+        renderList(currentData);
+      }
+      document.getElementById("lang-en").onclick = () => {
+        lang = "en";
+        applyTexts();
+      };
+      document.getElementById("lang-it").onclick = () => {
+        lang = "it";
+        applyTexts();
+      };
+      function showAlert(msg, type = "success") {
+        const box = document.getElementById("alertBox");
+        box.className = `alert alert-${type}`;
+        box.textContent = msg;
+        box.classList.remove("d-none");
+        setTimeout(() => box.classList.add("d-none"), 1800);
+      }
+      function setBusy(on) {
+        const btn = document.getElementById("submitBtn");
+        btn.disabled = on;
+        btn.textContent = on ? "..." : editId ? t[lang].update : t[lang].add;
+      }
+      function renderList(data) {
+        currentData = data;
+        const grid = document.getElementById("recipeGrid");
+        grid.innerHTML = "";
+        if (!data.length) {
+          grid.innerHTML = `<div class="col-12"><div class="text-muted small">No recipes yet.</div></div>`;
+          renderPager({ total: 0, pages: 1 });
+          return;
+        }
+        data.forEach((r) => {
+          const col = document.createElement("div");
+          col.className = "col-12 col-md-6 d-flex";
+          const src = imgSrc(r.imageUrl, 800);
+          const frontImg = r.imageUrl
+            ? `<img src="${src}" alt="${r.title || ""}"
+                   class="card-img-top"
+                   loading="lazy" decoding="async"
+                   sizes="(max-width: 576px) 100vw, (max-width: 991px) 50vw, 33vw">`
+            : "";
+          const ingredientsListHtml = (r.ingredients || [])
+            .map((i) => `&bull; ${i}`)
+            .join("<br>");
+          const backInstructions =
+            r.instructions && r.instructions.trim()
+              ? r.instructions
+              : lang === "it"
+              ? "Nessuna istruzione ancora."
+              : "No instructions yet.";
+          col.innerHTML = `
+            <div class="flip-card h-100 w-100" tabindex="0" aria-label="Recipe card">
+              <div class="flip-inner">
+                <div class="flip-front card h-100">
+                  ${frontImg}
+                  <div class="card-body">
+                    <h5 class="card-title mb-2">${r.title}</h5>
+                    <div class="card-text text-muted small mb-2 scroll-area clamp-ingredients">${ingredientsListHtml}</div>
+                    <button type="button" class="btn btn-link p-0 small more-btn"></button>
+                   
+                    <div class="d-flex align-items-center justify-content-between action-row">
+                        <div class="action-buttons">
+                          <button class="btn btn-outline-secondary btn-sm edit-btn">${t[lang].edit}</button>
+                          <button class="btn btn-outline-danger btn-sm del-btn">${t[lang].del}</button>
+                        </div>
+                        <div class="text-muted small flip-hint">${t[lang].backHint}</div>
+                        </div>
+                  </div>
+                </div>
+                <div class="flip-back card h-100">
+                  <div class="card-body d-flex flex-column">
+                    <h6 class="text-uppercase text-muted mb-2">${t[lang].howTo}</h6>
+                    <div class="small back-scroll" style="white-space: pre-wrap;">${backInstructions}</div>
+                    <div class="mt-auto d-flex justify-content-end">
+                      <div class="text-muted small flip-hint">${t[lang].backHint}</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          `;
+          grid.appendChild(col);
+        });
+        grid.querySelectorAll(".flip-card").forEach((el) => {
+          const toggle = (e) => {
+            if (e.target.closest("button")) return;
+            el.classList.toggle("flipped");
+          };
+          el.addEventListener("click", toggle);
+          el.addEventListener("keydown", (e) => {
+            if (e.code === "Space" || e.code === "Enter") {
+              e.preventDefault();
+              toggle(e);
+            }
+          });
+        });
+        document
+          .querySelectorAll(".edit-btn")
+          .forEach((btn) => (btn.onclick = () => startEdit(btn.dataset.id)));
+        document
+          .querySelectorAll(".del-btn")
+          .forEach((btn) => (btn.onclick = () => deleteRecipe(btn.dataset.id)));
+        document.querySelectorAll(".more-btn").forEach((btn) => {
+          const area = btn.previousElementSibling;
+          const setText = () => {
+            btn.textContent = area.classList.contains("expanded")
+              ? t[lang].showLess
+              : t[lang].showMore;
+          };
+          setText();
+          btn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            area.classList.toggle("expanded");
+            setText();
+            requestAnimationFrame(adjustFlipHeights);
+          });
+        });
+        function adjustFlipHeights() {
+          document.querySelectorAll(".flip-inner").forEach((inner) => {
+            const front = inner.querySelector(".flip-front");
+            if (!front) return;
+            const natural = front.scrollHeight || front.offsetHeight;
+            inner.style.minHeight = natural + "px";
+          });
+        }
+        adjustFlipHeights();
+        window.addEventListener("resize", adjustFlipHeights);
+        document.querySelectorAll("#recipeGrid img").forEach((img) => {
+          if (!img.complete) img.addEventListener("load", adjustFlipHeights);
+        });
+      }
+      function renderPager({ total, pages }) {
+        const info = document.getElementById("pagerInfo");
+        const prev = document.getElementById("prevBtn");
+        const next = document.getElementById("nextBtn");
+        info.textContent = `Page ${page}/${pages || 1} • ${total} item(s)`;
+        prev.disabled = page <= 1;
+        next.disabled = !pages || page >= pages;
+        prev.onclick = () => {
+          if (page > 1) {
+            page--;
+            fetchRecipes();
+          }
+        };
+        next.onclick = () => {
+          if (!pages || page >= pages) return;
+          page++;
+          fetchRecipes();
+        };
+      }
+      async function fetchRecipes() {
+        const params = new URLSearchParams();
+        if (query) params.set("search", query);
+        params.set("page", String(page));
+        params.set("limit", String(LIMIT));
+        const res = await fetch(`${API_URL}/recipes?${params.toString()}`, {
+          headers: { Accept: "application/json" },
+        });
+        if (!res.ok) {
+          showAlert(t[lang].failedOp, "danger");
+          return;
+        }
+        const data = await res.json();
+        const items = data.items || data;
+        const total = data.total ?? items.length;
+        const pages = data.pages ?? data.totalPages ?? 1;
+        renderList(items);
+        renderPager({ total, pages });
+      }
+      async function createRecipeFD({
+        title,
+        ingredients,
+        imageFile,
+        instructions,
+      }) {
+        const fd = new FormData();
+        fd.append("title", title);
+        fd.append("ingredients", JSON.stringify(ingredients));
+        if (instructions) fd.append("instructions", instructions);
+        if (imageFile) fd.append("image", imageFile);
+        const res = await fetch(`${API_URL}/recipes`, {
+          method: "POST",
+          body: fd,
+        });
+        if (!res.ok) throw new Error("Create failed");
+        return res.json();
+      }
+      async function updateRecipeFD(
+        id,
+        { title, ingredients, imageFile, instructions }
+      ) {
+        const fd = new FormData();
+        fd.append("title", title);
+        fd.append("ingredients", JSON.stringify(ingredients));
+        if (instructions) fd.append("instructions", instructions);
+        if (imageFile) fd.append("image", imageFile);
+        const res = await fetch(`${API_URL}/recipes/${id}`, {
+          method: "PUT",
+          body: fd,
+        });
+        if (!res.ok) throw new Error("Update failed");
+        return res.json();
+      }
+      async function startEdit(id) {
+        const res = await fetch(`${API_URL}/recipes/${id}`, {
+          headers: { Accept: "application/json" },
+        });
+        if (res.status === 404) {
+          showAlert("Recipe not found. Refreshing list.", "warning");
+          fetchRecipes();
+          return;
+        }
+        if (!res.ok) {
+          showAlert(t[lang].failedLoad, "danger");
+          return;
+        }
+        const r = await res.json();
+        document.getElementById("title").value = r.title || "";
+        ingredientsArr = Array.isArray(r.ingredients) ? [...r.ingredients] : [];
+        renderIngredients();
+        document.getElementById("instructions").value = r.instructions || "";
+        document.getElementById("image").value = "";
+        document.getElementById("submitBtn").textContent = t[lang].update;
+        document.getElementById("cancelEditBtn").classList.remove("d-none");
+        editId = getId(r);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }
+      async function deleteRecipe(id) {
+        if (!confirm(t[lang].confirmDelete)) return;
+        const res = await fetch(`${API_URL}/recipes/${id}`, {
+          method: "DELETE",
+          headers: { Accept: "application/json" },
+        });
+        if (res.status === 404) {
+          showAlert("Recipe not found. Refreshing list.", "warning");
+          fetchRecipes();
+          return;
+        }
+        if (!res.ok) {
+          showAlert(t[lang].failedOp, "danger");
+          return;
+        }
+        showAlert(t[lang].deleted, "success");
+        fetchRecipes();
+      }
+      function cancelEdit() {
+        editId = null;
+        document.getElementById("recipeForm").reset();
+        document.getElementById("submitBtn").textContent = t[lang].add;
+        document.getElementById("cancelEditBtn").classList.add("d-none");
+        document.getElementById("image").value = "";
+        document.getElementById("fileHint").textContent = t[lang].noFile;
+        ingredientsArr = [];
+        renderIngredients();
+      }
+      document.getElementById("cancelEditBtn").onclick = cancelEdit;
+      document.getElementById("searchForm").addEventListener("submit", (e) => {
+        e.preventDefault();
+        query = document.getElementById("searchInput").value.trim();
+        page = 1;
+        fetchRecipes();
+      });
+      let searchTmr;
+      document.getElementById("searchInput").addEventListener("input", (e) => {
+        clearTimeout(searchTmr);
+        searchTmr = setTimeout(() => {
+          query = e.target.value.trim();
+          page = 1;
+          fetchRecipes();
+        }, 300);
+      });
+      const btnTop = document.getElementById("btnTop");
+      btnTop.addEventListener("click", () =>
+        window.scrollTo({ top: 0, behavior: "smooth" })
+      );
+      window.addEventListener("scroll", () => {
+        btnTop.style.display = window.scrollY > 300 ? "block" : "none";
+      });
+      hookFilePicker();
+      fetchRecipes().then(applyTexts);
+    </script>
+    <div class="modal fade" id="contactModal" tabindex="-1" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="contactTitle">Contact</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            ></button>
+          </div>
+          <div class="modal-body" id="contactContent">
+            Email:
+            <a href="mailto:adrendor@protonmail.com">adrendor@protonmail.com</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
+
+
+

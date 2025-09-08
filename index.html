@@ -375,11 +375,9 @@
     <script>
       const CLOUD_NAME = "dn9qbyrje";
 
-      const API_URL = window.location.hostname.includes("localhost")
+      const API_URL = location.hostname.includes("localhost")
         ? "http://localhost:5000"
         : "https://fork-forchetta-api.onrender.com";
-
-      const getId = (r) => r && (r._id || r.id);
 
       function imgSrc(u, w = 700, h = 200, cover = true) {
         if (!u) return "";
@@ -388,16 +386,23 @@
           "https://fork-forchetta-api.onrender.com"
         );
 
-        if (src.includes("res.cloudinary.com") && src.includes("/upload/")) {
+        if (
+          src.startsWith("https://res.cloudinary.com/") &&
+          src.includes("/upload/")
+        ) {
           const fill = cover ? `,h_${h},c_fill,g_auto` : "";
-          return src.replace(
-            "/upload/",
-            `/upload/f_auto,q_auto,dpr=auto,w_${w}${fill}/`
-          );
+
+          if (!/\/upload\/.*(f_auto|q_auto|w_)/.test(src)) {
+            src = src.replace(
+              "/upload/",
+              `/upload/f_auto,q_auto,dpr=auto,w_${w}${fill}/`
+            );
+          }
+          return src;
         }
 
         const looksLikeFilename =
-          /^[\w\-\/]+?\.(jpe?g|png|webp|gif|avif)$/i.test(src);
+          /^[\w\-\/]+?\.(?:jpe?g|png|webp|gif|avif)$/i.test(src);
         if (looksLikeFilename) {
           const fill = cover ? `,h_${h},c_fill,g_auto` : "";
           return `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/f_auto,q_auto,dpr=auto,w_${w}${fill}/${src}`;

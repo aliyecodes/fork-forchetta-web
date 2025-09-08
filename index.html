@@ -14,7 +14,7 @@
       content="Simple recipe manager. Add, edit, search recipes."
     />
     <meta property="og:type" content="website" />
-    <meta property="og:url" content="https://fork-forchetta-web.vercel.app/" />
+    <meta property="og:url" content="fork-forchetta.vercel.app" />
     <meta
       property="og:image"
       content="https://res.cloudinary.com/demo/image/upload/w_1200/sample.jpg"
@@ -33,10 +33,10 @@
     <link rel="dns-prefetch" href="//res.cloudinary.com" />
     <link
       rel="preconnect"
-      href="https://fork-forchetta-api-l5ze.onrender.com"
+      href="https://fork-forchetta-api.onrender.com"
       crossorigin
     />
-    <link rel="dns-prefetch" href="//fork-forchetta-api-l5ze.onrender.com" />
+    <link rel="dns-prefetch" href="//fork-forchetta-api.onrender.com" />
     <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin />
     <link rel="dns-prefetch" href="//cdn.jsdelivr.net" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
@@ -190,7 +190,7 @@
                 Contact
               </button>
               <a
-                href="https://github.com/aliyecodes/fork-forchetta-web"
+                href="https://github.com/aliyecodes/fork-forchetta-web.git"
                 target="_blank"
                 rel="noopener"
                 class="btn btn-outline-light btn-sm"
@@ -377,15 +377,15 @@
 
       const API_URL = window.location.hostname.includes("localhost")
         ? "http://localhost:5000"
-        : "https://fork-forchetta-api-l5ze.onrender.com";
+        : "https://fork-forchetta-api.onrender.com";
 
       const getId = (r) => r && (r._id || r.id);
 
       function imgSrc(u, w = 700, h = 200, cover = true) {
         if (!u) return "";
         let src = String(u).replace(
-          "http://fork-forchetta-api-l5ze.onrender.com",
-          "https://fork-forchetta-api-l5ze.onrender.com"
+          "http://fork-forchetta-api.onrender.com",
+          "https://fork-forchetta-api.onrender.com"
         );
 
         if (src.includes("res.cloudinary.com") && src.includes("/upload/")) {

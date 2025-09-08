@@ -7,8 +7,8 @@ It communicates with the backend API (Node.js + Express + MongoDB + Cloudinary) 
 ---
 
 ## 🚀 Live
-- Frontend (Vercel): fork-forchetta-web-epa1.vercel.app
-- API (Render): https://fork-forchetta-api-l5ze.onrender.com
+- Frontend (Vercel): https://fork-forchetta.vercel.app
+- API (Render): https://fork-forchetta-api.onrender.com
 
 ---
 
@@ -54,7 +54,7 @@ npx serve
 
     Make sure the backend API is running locally at http://localhost:5000.
 
-
+---
 
 # 🇮🇹 Fork & Forchetta – Frontend
 
@@ -63,8 +63,8 @@ Un’applicazione web leggera e responsive realizzata con HTML, CSS (Bootstrap/B
 Il frontend comunica con l’API backend (Node.js + Express + MongoDB + Cloudinary) ospitata su Render.
 
 ## 🚀 Live
-- Frontend (Vercel): fork-forchetta-web-epa1.vercel.app
-- API (Render): https://fork-forchetta-api-l5ze.onrender.com
+- Frontend (Vercel): https://fork-forchetta.vercel.app
+- API (Render): https://fork-forchetta-api.onrender.com
 
 ## ✨ Funzionalità
 - Aggiungere, modificare e cancellare ricette

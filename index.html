@@ -8,6 +8,7 @@
       name="description"
       content="Fork & Forchetta — simple recipe manager (EN/IT)."
     />
+    <meta property="og:url" content="https://fork-forchetta.vercel.app/" />
     <meta
       property="og:description"
       content="Simple recipe manager. Add, edit, search recipes."
@@ -387,22 +388,8 @@
           "https://fork-forchetta-api.onrender.com"
         );
 
-        const isCloudFull =
-          src.startsWith("https://res.cloudinary.com/") &&
-          src.includes("/upload/");
-        if (isCloudFull) {
-          const fill = cover ? `,h_${h},c_fill,g_auto` : "";
-          src = src.replace(/\/upload\/[^/]*\//, "/upload/"); 
-          return src.replace(
-            "/upload/",
-            `/upload/f_auto,q_auto,dpr=auto,w_${w}${fill}/`
-          );
-        }
-
-        const isPublicId = /^[\w\-\/]+(\.(jpe?g|png|webp|gif|avif))?$/i.test(
-          src
-        );
-        if (isPublicId) {
+        const isFilename = /^[\w\-\/]+?\.(jpe?g|png|webp|gif|avif)$/i.test(src);
+        if (isFilename) {
           const fill = cover ? `,h_${h},c_fill,g_auto` : "";
           return `https://res.cloudinary.com/${CLOUD_NAME}/image/upload/f_auto,q_auto,dpr=auto,w_${w}${fill}/${src}`;
         }

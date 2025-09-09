@@ -58,13 +58,11 @@ These decisions ensure that Fork & Forchetta is not only functional but also sca
 ```bash
 git clone https://github.com/aliyecodes/fork-forchetta-web.git
 cd fork-forchetta-web
-# Open index.html in the browser
-# OR use a local dev server (recommended):
-npx serve
-
+Open index.html in the browser OR use a local dev server (recommended): npx serve
     Make sure the backend API is running locally at http://localhost:5000.
 
 ---
+
 
 # 🇮🇹 Fork & Forchetta – Frontend
 
